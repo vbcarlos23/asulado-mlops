@@ -1,0 +1,43 @@
+steps:
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        git clone https://github.com/vbcarlos23/asulado-mlops.git
+        cd asulado-mlops
+        pip install -r requirements.txt
+
+  - name: 'gcr.io/google-appengine/python'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd asulado-mlops
+        python build_pipeline.py
+
+  - name: 'gcr.io/google-appengine/python'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd asulado-mlops
+        python run_pipeline.py
+
+# Opcional: Despliegue automático del modelo si es necesario
+  - name: 'gcr.io/google-appengine/python'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd asulado-mlops
+        python deploy_model.py
+
+# Artifacts
+artifacts:
+  objects:
+    location: 'gs://interno-davinci-analitica-bucket/resultados/'
+    paths: ['**']
+
+# Configuración adicional
+timeout: 3600s  # Tiempo de espera máximo para la construcción
