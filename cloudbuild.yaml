@@ -6,9 +6,16 @@ steps:
       - |
         git clone https://github.com/vbcarlos23/asulado-mlops.git
         cd asulado-mlops
+
+  - name: 'python:3.9'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd asulado-mlops
         pip install -r requirements.txt
 
-  - name: 'gcr.io/google-appengine/python'
+  - name: 'python:3.9'
     entrypoint: 'bash'
     args:
       - '-c'
@@ -16,7 +23,7 @@ steps:
         cd asulado-mlops
         python build_pipeline.py
 
-  - name: 'gcr.io/google-appengine/python'
+  - name: 'python:3.9'
     entrypoint: 'bash'
     args:
       - '-c'
@@ -25,7 +32,7 @@ steps:
         python run_pipeline.py
 
 # Opcional: Despliegue automático del modelo si es necesario
-  - name: 'gcr.io/google-appengine/python'
+  - name: 'python:3.9'
     entrypoint: 'bash'
     args:
       - '-c'
