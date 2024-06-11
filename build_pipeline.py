@@ -7,6 +7,8 @@ from kfp.v2 import dsl
 from kfp.v2 import compiler
 from kfp.components import load_component_from_file
 
+# Este es un comentario de prueba para activar Cloud Build
+
 download_data = load_component_from_file("./components/download_data.yaml")
 preprocess_data = load_component_from_file("./components/preprocess_data.yaml")
 train_model = load_component_from_file("./components/train.yaml")
