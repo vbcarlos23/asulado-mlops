@@ -1,0 +1,101 @@
+# PIPELINE DEFINITION
+# Name: download-data
+# Inputs:
+#    input_data_filename: str
+#    input_data_path: str
+# Outputs:
+#    downloaded_data: system.Dataset
+components:
+  comp-download-data:
+    executorLabel: exec-download-data
+    inputDefinitions:
+      parameters:
+        input_data_filename:
+          parameterType: STRING
+        input_data_path:
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        downloaded_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+deploymentSpec:
+  executors:
+    exec-download-data:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - download_data
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'pyarrow'\
+          \ 'fsspec' 'gcsfs' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef download_data(input_data_path : str\n                  , input_data_filename\
+          \ : str\n                  , downloaded_data : Output[Dataset]):\n\n   \
+          \ import pandas as pd\n    import os\n\n    print(f\"input_data_path : {input_data_path}\"\
+          )\n    print(f\"input_data_filename : {input_data_filename}\")\n    print(f\"\
+          downloaded_data : {downloaded_data}\")\n    print(f\"downloaded_data.path\
+          \ : {downloaded_data.path}\")\n\n    url = os.path.join(input_data_path\
+          \ , input_data_filename)\n\n    #read data from GCS location\n    data =\
+          \ pd.read_csv(url)\n\n    #write to output dataset path\n    output_data_uri\
+          \ = downloaded_data.path + \".csv\" \n    data.to_csv(output_data_uri \n\
+          \                , index=False\n                , encoding='utf-8-sig')\n\
+          \n"
+        image: python:3.9
+pipelineInfo:
+  name: download-data
+root:
+  dag:
+    outputs:
+      artifacts:
+        downloaded_data:
+          artifactSelectors:
+          - outputArtifactKey: downloaded_data
+            producerSubtask: download-data
+    tasks:
+      download-data:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-download-data
+        inputs:
+          parameters:
+            input_data_filename:
+              componentInputParameter: input_data_filename
+            input_data_path:
+              componentInputParameter: input_data_path
+        taskInfo:
+          name: download-data
+  inputDefinitions:
+    parameters:
+      input_data_filename:
+        parameterType: STRING
+      input_data_path:
+        parameterType: STRING
+  outputDefinitions:
+    artifacts:
+      downloaded_data:
+        artifactType:
+          schemaTitle: system.Dataset
+          schemaVersion: 0.0.1
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.7.0

@@ -1,0 +1,121 @@
+# PIPELINE DEFINITION
+# Name: register-model
+# Inputs:
+#    model: system.Model
+#    model_name: str
+#    project_id: str
+#    region: str
+#    serving_container_uri: str
+# Outputs:
+#    model_resource_name: str
+components:
+  comp-register-model:
+    executorLabel: exec-register-model
+    inputDefinitions:
+      artifacts:
+        model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+      parameters:
+        model_name:
+          parameterType: STRING
+        project_id:
+          parameterType: STRING
+        region:
+          parameterType: STRING
+        serving_container_uri:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        model_resource_name:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-register-model:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - register_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'google-cloud-aiplatform'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef register_model(serving_container_uri: str, project_id: str, region:\
+          \ str, model_name: str, model: Input[Model]) -> NamedTuple(\"Outputs\",\
+          \ [(\"model_resource_name\", str)]):\n    from google.cloud import aiplatform\n\
+          \n    aiplatform.init(project=project_id, location=region)\n    model =\
+          \ aiplatform.Model.upload(display_name=model_name, artifact_uri=model.uri[:-5],\
+          \ serving_container_image_uri=serving_container_uri)\n    return (model.resource_name,)\n\
+          \n"
+        image: python:3.9
+pipelineInfo:
+  name: register-model
+root:
+  dag:
+    outputs:
+      parameters:
+        model_resource_name:
+          valueFromParameter:
+            outputParameterKey: model_resource_name
+            producerSubtask: register-model
+    tasks:
+      register-model:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-register-model
+        inputs:
+          artifacts:
+            model:
+              componentInputArtifact: model
+          parameters:
+            model_name:
+              componentInputParameter: model_name
+            project_id:
+              componentInputParameter: project_id
+            region:
+              componentInputParameter: region
+            serving_container_uri:
+              componentInputParameter: serving_container_uri
+        taskInfo:
+          name: register-model
+  inputDefinitions:
+    artifacts:
+      model:
+        artifactType:
+          schemaTitle: system.Model
+          schemaVersion: 0.0.1
+    parameters:
+      model_name:
+        parameterType: STRING
+      project_id:
+        parameterType: STRING
+      region:
+        parameterType: STRING
+      serving_container_uri:
+        parameterType: STRING
+  outputDefinitions:
+    parameters:
+      model_resource_name:
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.7.0
