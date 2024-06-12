@@ -49,5 +49,6 @@ artifacts:
     location: 'gs://interno-davinci-analitica-bucket/resultados/'
     paths: ['**']
 
+
 # Configuración adicional
 timeout: 3600s  # Tiempo de espera máximo para la construcción
