@@ -1,8 +1,9 @@
 
 import json
-import yaml
 
 import kfp
+import yaml
+
 from kfp.v2 import dsl
 from kfp.v2 import compiler
 from kfp.components import load_component_from_file
