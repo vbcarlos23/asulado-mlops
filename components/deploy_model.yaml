@@ -1,0 +1,104 @@
+# PIPELINE DEFINITION
+# Name: deploy-model
+# Inputs:
+#    model_resource_name: str
+#    project_id: str
+#    region: str
+# Outputs:
+#    endpoint_resource_name: str
+components:
+  comp-deploy-model:
+    executorLabel: exec-deploy-model
+    inputDefinitions:
+      parameters:
+        model_resource_name:
+          parameterType: STRING
+        project_id:
+          parameterType: STRING
+        region:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        endpoint_resource_name:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-deploy-model:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - deploy_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.4.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'pyarrow'\
+          \ 'scikit-learn==1.0' 'fsspec' 'gcsfs' 'google-cloud-aiplatform' && \"$0\"\
+          \ \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef deploy_model(\n    model_resource_name : str ,\n    project_id\
+          \ : str ,\n    region: str\n)-> NamedTuple(\n    \"Outputs\",\n    [\n \
+          \       (\"endpoint_resource_name\", str),  # Return parameter.\n    ],\n\
+          ):\n\n    print(f\"model_resource_name : {model_resource_name}\")\n    print(f\"\
+          project_id : {project_id}\")\n    print(f\"region : {region}\")\n\n    from\
+          \ google.cloud import aiplatform\n\n    aiplatform.init(project = project_id\
+          \ , location=region)\n\n    model = aiplatform.Model(model_resource_name)\n\
+          \    endpoint = model.deploy(machine_type=\"n1-standard-4\",\n         \
+          \               min_replica_count=1,\n                        max_replica_count=1)\n\
+          \n    return (endpoint.resource_name,)\n\n"
+        image: python:3.9
+pipelineInfo:
+  name: deploy-model
+root:
+  dag:
+    outputs:
+      parameters:
+        endpoint_resource_name:
+          valueFromParameter:
+            outputParameterKey: endpoint_resource_name
+            producerSubtask: deploy-model
+    tasks:
+      deploy-model:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-deploy-model
+        inputs:
+          parameters:
+            model_resource_name:
+              componentInputParameter: model_resource_name
+            project_id:
+              componentInputParameter: project_id
+            region:
+              componentInputParameter: region
+        taskInfo:
+          name: deploy-model
+  inputDefinitions:
+    parameters:
+      model_resource_name:
+        parameterType: STRING
+      project_id:
+        parameterType: STRING
+      region:
+        parameterType: STRING
+  outputDefinitions:
+    parameters:
+      endpoint_resource_name:
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.4.0
