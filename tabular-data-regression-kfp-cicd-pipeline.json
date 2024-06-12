@@ -1,0 +1,757 @@
+{
+  "components": {
+    "comp-condition-1": {
+      "dag": {
+        "tasks": {
+          "deploy-model": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-deploy-model"
+            },
+            "dependentTasks": [
+              "register-model"
+            ],
+            "inputs": {
+              "parameters": {
+                "model_resource_name": {
+                  "taskOutputParameter": {
+                    "outputParameterKey": "model_resource_name",
+                    "producerTask": "register-model"
+                  }
+                },
+                "project_id": {
+                  "componentInputParameter": "pipelinechannel--project"
+                },
+                "region": {
+                  "componentInputParameter": "pipelinechannel--region"
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "deploy-model"
+            }
+          },
+          "register-model": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-register-model"
+            },
+            "inputs": {
+              "artifacts": {
+                "model": {
+                  "componentInputArtifact": "pipelinechannel--train-model-model"
+                }
+              },
+              "parameters": {
+                "model_name": {
+                  "componentInputParameter": "pipelinechannel--model_name"
+                },
+                "project_id": {
+                  "componentInputParameter": "pipelinechannel--project"
+                },
+                "region": {
+                  "componentInputParameter": "pipelinechannel--region"
+                },
+                "serving_container_uri": {
+                  "componentInputParameter": "pipelinechannel--serving_container_uri"
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "register-model"
+            }
+          }
+        }
+      },
+      "inputDefinitions": {
+        "artifacts": {
+          "pipelinechannel--train-model-model": {
+            "artifactType": {
+              "schemaTitle": "system.Model",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "pipelinechannel--evaluate-model-deploy_flag": {
+            "parameterType": "STRING"
+          },
+          "pipelinechannel--model_name": {
+            "parameterType": "STRING"
+          },
+          "pipelinechannel--project": {
+            "parameterType": "STRING"
+          },
+          "pipelinechannel--region": {
+            "parameterType": "STRING"
+          },
+          "pipelinechannel--serving_container_uri": {
+            "parameterType": "STRING"
+          }
+        }
+      }
+    },
+    "comp-deploy-model": {
+      "executorLabel": "exec-deploy-model",
+      "inputDefinitions": {
+        "parameters": {
+          "model_resource_name": {
+            "parameterType": "STRING"
+          },
+          "project_id": {
+            "parameterType": "STRING"
+          },
+          "region": {
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "parameters": {
+          "endpoint_resource_name": {
+            "parameterType": "STRING"
+          }
+        }
+      }
+    },
+    "comp-download-data": {
+      "executorLabel": "exec-download-data",
+      "inputDefinitions": {
+        "parameters": {
+          "input_data_filename": {
+            "parameterType": "STRING"
+          },
+          "input_data_path": {
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "downloaded_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      }
+    },
+    "comp-evaluate-model": {
+      "executorLabel": "exec-evaluate-model",
+      "inputDefinitions": {
+        "artifacts": {
+          "model": {
+            "artifactType": {
+              "schemaTitle": "system.Model",
+              "schemaVersion": "0.0.1"
+            }
+          },
+          "test_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "deployment_metric": {
+            "parameterType": "STRING"
+          },
+          "deployment_metric_threshold": {
+            "parameterType": "NUMBER_DOUBLE"
+          },
+          "target_column_name": {
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "kpi": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "deploy_flag": {
+            "parameterType": "STRING"
+          }
+        }
+      }
+    },
+    "comp-preprocess-data": {
+      "executorLabel": "exec-preprocess-data",
+      "inputDefinitions": {
+        "artifacts": {
+          "input_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "test_size": {
+            "parameterType": "NUMBER_DOUBLE"
+          },
+          "train_size": {
+            "parameterType": "NUMBER_DOUBLE"
+          },
+          "valid_size": {
+            "parameterType": "NUMBER_DOUBLE"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "test_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          },
+          "train_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          },
+          "valid_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      }
+    },
+    "comp-register-model": {
+      "executorLabel": "exec-register-model",
+      "inputDefinitions": {
+        "artifacts": {
+          "model": {
+            "artifactType": {
+              "schemaTitle": "system.Model",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "model_name": {
+            "parameterType": "STRING"
+          },
+          "project_id": {
+            "parameterType": "STRING"
+          },
+          "region": {
+            "parameterType": "STRING"
+          },
+          "serving_container_uri": {
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "parameters": {
+          "model_resource_name": {
+            "parameterType": "STRING"
+          }
+        }
+      }
+    },
+    "comp-train-model": {
+      "executorLabel": "exec-train-model",
+      "inputDefinitions": {
+        "artifacts": {
+          "train_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "model": {
+            "artifactType": {
+              "schemaTitle": "system.Model",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      }
+    }
+  },
+  "defaultPipelineRoot": "gs://interno-davinci-analitica-bucket/pipeline_root/kfp_tabular_data_regression",
+  "deploymentSpec": {
+    "executors": {
+      "exec-deploy-model": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "deploy_model"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.4.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'pyarrow' 'scikit-learn==1.0' 'fsspec' 'gcsfs' 'google-cloud-aiplatform' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef deploy_model(\n    model_resource_name : str ,\n    project_id : str ,\n    region: str\n)-> NamedTuple(\n    \"Outputs\",\n    [\n        (\"endpoint_resource_name\", str),  # Return parameter.\n    ],\n):\n\n    print(f\"model_resource_name : {model_resource_name}\")\n    print(f\"project_id : {project_id}\")\n    print(f\"region : {region}\")\n\n    from google.cloud import aiplatform\n\n    aiplatform.init(project = project_id , location=region)\n\n    model = aiplatform.Model(model_resource_name)\n    endpoint = model.deploy(machine_type=\"n1-standard-4\",\n                        min_replica_count=1,\n                        max_replica_count=1)\n\n    return (endpoint.resource_name,)\n\n"
+          ],
+          "image": "python:3.9"
+        }
+      },
+      "exec-download-data": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "download_data"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.4.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'pyarrow' 'fsspec' 'gcsfs' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef download_data(input_data_path : str\n                  , input_data_filename : str\n                  , downloaded_data : Output[Dataset]):\n\n    import pandas as pd\n    import os\n\n    print(f\"input_data_path : {input_data_path}\")\n    print(f\"input_data_filename : {input_data_filename}\")\n    print(f\"downloaded_data : {downloaded_data}\")\n    print(f\"downloaded_data.path : {downloaded_data.path}\")\n\n    url = os.path.join(input_data_path , input_data_filename)\n\n    #read data from GCS location\n    data = pd.read_csv(url)\n\n    #write to output dataset path\n    output_data_uri = downloaded_data.path + \".csv\" \n    data.to_csv(output_data_uri \n                , index=False\n                , encoding='utf-8-sig')\n\n"
+          ],
+          "image": "python:3.9"
+        }
+      },
+      "exec-evaluate-model": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "evaluate_model"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.4.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'pyarrow' 'scikit-learn==1.0' 'fsspec' 'gcsfs' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef evaluate_model(\n    test_data:  Input[Dataset],\n    model: Input[Model], \n    target_column_name : str ,\n    deployment_metric : str ,\n    deployment_metric_threshold : float ,\n    kpi: Output[Metrics]\n)-> NamedTuple(\n    \"Outputs\",\n    [\n        (\"deploy_flag\", str),  # Return parameter.\n    ],\n):\n\n    print(f\"test_data : {test_data}\")\n    print(f\"model : {model}\")\n    print(f\"kpi : {kpi}\")\n    print(f\"deployment_metric : {deployment_metric}\")\n    print(f\"deployment_metric_threshold : {deployment_metric_threshold}\")\n\n    from sklearn.metrics import mean_absolute_error,r2_score,mean_squared_error,mean_absolute_percentage_error\n    import pandas as pd\n    import pickle\n    import numpy as np\n    import json\n\n    test_ds = pd.read_csv(test_data.path+\".csv\")\n    target = target_column_name\n\n    x_test = test_ds.drop(columns=target, axis=1)\n    y_test = test_ds[target]\n\n    print(f\"model.path : {model.path}\")\n    file_name = model.path + f\".pkl\"\n    print(f\"file_name : {file_name}\")\n    #model = pickle.loads(file_name)\n    with open(file_name, 'rb') as file:  \n        model = pickle.load(file)\n\n    y_pred = model.predict(x_test)\n    r2 = r2_score(y_true=y_test, y_pred=y_pred)\n    mae = mean_absolute_error(y_true=y_test, y_pred=y_pred)\n    mse = mean_squared_error(y_true=y_test, y_pred=y_pred)\n    mape = mean_absolute_percentage_error(y_true=y_test, y_pred=y_pred)\n    rmse = np.sqrt(mse)\n\n    model_metrics = {\"r2\" : r2 \n                     , \"mae\" : mae \n                     , \"mape\" : mape \n                     , \"mse\" : mse \n                     , \"rmse\" : rmse\n                    }\n\n    print(f\"Adjusted_R2 : {r2}\")\n    print(f\"Mean Absolute Error : {mae}\")\n    print(f\"Mean Absolute Percentage Error : {round(mape,4)*100}%\")\n    print(f\"Mean Squared Error : {mse}\")\n    print(f\"Root Mean Squared Error : {rmse}\")\n\n    kpi.log_metric(\"Adjusted_R2\", float(r2))\n    kpi.log_metric(\"Mean Absolute Error\", float(mae))\n    kpi.log_metric(\"Mean Absolute Percentage Error\", float(mape))\n    kpi.log_metric(\"Mean Squared Error\", float(mse))\n    kpi.log_metric(\"Root Mean Squared Error\", float(rmse))\n\n    actual_metric_value = model_metrics.get(deployment_metric)\n\n    if actual_metric_value >= deployment_metric_threshold:\n        deploy_flag = \"True\"\n    else:\n        deploy_flag = \"False\"\n\n    return (deploy_flag,)\n\n"
+          ],
+          "image": "python:3.9"
+        }
+      },
+      "exec-preprocess-data": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "preprocess_data"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.4.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'pyarrow' 'fsspec' 'gcsfs' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef preprocess_data(train_size : float \n                    , test_size : float\n                    , valid_size : float\n                    , train_data : Output[Dataset]\n                    , valid_data : Output[Dataset]\n                    , test_data : Output[Dataset]\n                    , input_data:  Input[Dataset]\n                   ):\n\n    import numpy as np\n    import pandas as pd\n\n    print(f\"train_size : {train_size}\")\n    print(f\"test_size : {test_size}\")\n    print(f\"valid_size : {valid_size}\")\n    print(f\"train_data : {train_data}\")\n    print(f\"valid_data : {valid_data}\")\n    print(f\"test_data : {test_data}\")\n    print(f\"input_data : {input_data}\")\n\n    data = pd.read_csv(input_data.path + \".csv\")\n\n    modelling_columns = [\"season\" \n                     , \"yr\" \n                     ,\"mnth\" \n                     ,\"hr\" \n                     ,\"holiday\" \n                     , \"weekday\" \n                     , \"workingday\" \n                     , \"weathersit\" \n                     , \"temp\" \n                     , \"atemp\" \n                     , \"hum\" \n                     , \"windspeed\" \n                     , \"casual\" \n                     , \"registered\" \n                     , \"cnt\"\n                    ]\n\n    data = data[modelling_columns]\n\n    train_ds, valid_ds, test_ds = np.split(data.sample(frac=1, random_state=42), [int((train_size)*len(data)), int((1-test_size)*len(data))])\n    train_ds.to_csv(train_data.path + \".csv\" , index=False, encoding='utf-8-sig')\n    valid_ds.to_csv(valid_data.path + \".csv\" , index=False, encoding='utf-8-sig')\n    test_ds.to_csv(test_data.path + \".csv\" , index=False, encoding='utf-8-sig')\n\n"
+          ],
+          "image": "python:3.9"
+        }
+      },
+      "exec-register-model": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "register_model"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.4.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'pyarrow' 'scikit-learn==1.0' 'fsspec' 'gcsfs' 'google-cloud-aiplatform' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef register_model(\n    serving_container_uri : str ,\n    project_id : str ,\n    region: str,\n    model_name : str , \n    model: Input[Model], \n)-> NamedTuple(\n    \"Outputs\",\n    [\n        (\"model_resource_name\", str),  # Return parameter.\n    ],\n):\n\n    print(f\"serving_container_uri : {serving_container_uri}\")\n    print(f\"project_id : {project_id}\")\n    print(f\"region : {region}\")\n    print(f\"model : {model}\")\n\n    from google.cloud import aiplatform\n\n    print(f\"model.uri : {model.uri[:-5]}\")\n\n    aiplatform.init(project = project_id , location=region)\n    model = aiplatform.Model.upload(display_name= model_name ,\n                                    artifact_uri=model.uri[:-5],\n                                    serving_container_image_uri=serving_container_uri)\n    return (model.resource_name,)\n\n"
+          ],
+          "image": "python:3.9"
+        }
+      },
+      "exec-train-model": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "train_model"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.4.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'pyarrow' 'scikit-learn==1.0' 'fsspec' 'gcsfs' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef train_model(\n    train_data:  Input[Dataset],\n    model: Output[Model], \n):\n\n    print(f\"train_data : {train_data}\")\n    print(f\"model : {model}\")\n\n    from sklearn.ensemble import RandomForestRegressor\n    import pandas as pd\n    import pickle\n    import sklearn\n\n    train_ds = pd.read_csv(train_data.path+\".csv\")\n    my_model = RandomForestRegressor()\n\n    target = \"cnt\"\n\n    x_train = train_ds.drop(columns=target, axis=1)\n    y_train = train_ds[target]\n\n    my_model.fit(x_train , y_train)\n    model.metadata[\"model_name\"] = \"RandomForestRegressor\"\n    model.metadata[\"framework\"] = \"sklearn\"\n    model.metadata[\"framework_version\"] = sklearn.__version__\n    file_name = model.path + f\".pkl\"\n\n    with open(file_name, 'wb') as file:  \n        pickle.dump(my_model, file)\n\n"
+          ],
+          "image": "python:3.9"
+        }
+      }
+    }
+  },
+  "pipelineInfo": {
+    "name": "tabular-data-regression-kfp-cicd-pipeline"
+  },
+  "root": {
+    "dag": {
+      "outputs": {
+        "artifacts": {
+          "evaluate-model-kpi": {
+            "artifactSelectors": [
+              {
+                "outputArtifactKey": "kpi",
+                "producerSubtask": "evaluate-model"
+              }
+            ]
+          }
+        }
+      },
+      "tasks": {
+        "condition-1": {
+          "componentRef": {
+            "name": "comp-condition-1"
+          },
+          "dependentTasks": [
+            "evaluate-model",
+            "train-model"
+          ],
+          "inputs": {
+            "artifacts": {
+              "pipelinechannel--train-model-model": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "model",
+                  "producerTask": "train-model"
+                }
+              }
+            },
+            "parameters": {
+              "pipelinechannel--evaluate-model-deploy_flag": {
+                "taskOutputParameter": {
+                  "outputParameterKey": "deploy_flag",
+                  "producerTask": "evaluate-model"
+                }
+              },
+              "pipelinechannel--model_name": {
+                "componentInputParameter": "model_name"
+              },
+              "pipelinechannel--project": {
+                "componentInputParameter": "project"
+              },
+              "pipelinechannel--region": {
+                "componentInputParameter": "region"
+              },
+              "pipelinechannel--serving_container_uri": {
+                "componentInputParameter": "serving_container_uri"
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "condition-1"
+          },
+          "triggerPolicy": {
+            "condition": "inputs.parameter_values['pipelinechannel--evaluate-model-deploy_flag'] == 'True'"
+          }
+        },
+        "download-data": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-download-data"
+          },
+          "inputs": {
+            "parameters": {
+              "input_data_filename": {
+                "componentInputParameter": "input_data_filename"
+              },
+              "input_data_path": {
+                "componentInputParameter": "input_data_path"
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "download-data"
+          }
+        },
+        "evaluate-model": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-evaluate-model"
+          },
+          "dependentTasks": [
+            "preprocess-data",
+            "train-model"
+          ],
+          "inputs": {
+            "artifacts": {
+              "model": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "model",
+                  "producerTask": "train-model"
+                }
+              },
+              "test_data": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "test_data",
+                  "producerTask": "preprocess-data"
+                }
+              }
+            },
+            "parameters": {
+              "deployment_metric": {
+                "componentInputParameter": "deployment_metric"
+              },
+              "deployment_metric_threshold": {
+                "componentInputParameter": "deployment_metric_threshold"
+              },
+              "target_column_name": {
+                "componentInputParameter": "target_column_name"
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "evaluate-model"
+          }
+        },
+        "preprocess-data": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-preprocess-data"
+          },
+          "dependentTasks": [
+            "download-data"
+          ],
+          "inputs": {
+            "artifacts": {
+              "input_data": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "downloaded_data",
+                  "producerTask": "download-data"
+                }
+              }
+            },
+            "parameters": {
+              "test_size": {
+                "componentInputParameter": "test_size"
+              },
+              "train_size": {
+                "componentInputParameter": "train_size"
+              },
+              "valid_size": {
+                "componentInputParameter": "valid_size"
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "preprocess-data"
+          }
+        },
+        "train-model": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-train-model"
+          },
+          "dependentTasks": [
+            "preprocess-data"
+          ],
+          "inputs": {
+            "artifacts": {
+              "train_data": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "train_data",
+                  "producerTask": "preprocess-data"
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "train-model"
+          }
+        }
+      }
+    },
+    "inputDefinitions": {
+      "parameters": {
+        "deployment_metric": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "deployment_metric_threshold": {
+          "defaultValue": 0.8,
+          "isOptional": true,
+          "parameterType": "NUMBER_DOUBLE"
+        },
+        "hypertune_container_image_uri": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "hypertune_job_name": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "hypertune_machine_replica_count": {
+          "defaultValue": 1.0,
+          "isOptional": true,
+          "parameterType": "NUMBER_INTEGER"
+        },
+        "hypertune_machine_type": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "hypertune_max_trial_count": {
+          "defaultValue": 1.0,
+          "isOptional": true,
+          "parameterType": "NUMBER_INTEGER"
+        },
+        "hypertune_metric": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "hypertune_metric_objective": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "hypertune_parallel_trial_count": {
+          "defaultValue": 1.0,
+          "isOptional": true,
+          "parameterType": "NUMBER_INTEGER"
+        },
+        "input_data_filename": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "input_data_path": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "model_name": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "monitoring_job_name": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "pipeline_name": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "pipeline_package_path": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "predict_instance_schema_uri": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "project": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "region": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "service_account": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "serving_container_uri": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "staging_bucket_uri": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "target_column_name": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "test_size": {
+          "defaultValue": 0.1,
+          "isOptional": true,
+          "parameterType": "NUMBER_DOUBLE"
+        },
+        "train_size": {
+          "defaultValue": 0.8,
+          "isOptional": true,
+          "parameterType": "NUMBER_DOUBLE"
+        },
+        "user_email": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "valid_size": {
+          "defaultValue": 0.1,
+          "isOptional": true,
+          "parameterType": "NUMBER_DOUBLE"
+        }
+      }
+    },
+    "outputDefinitions": {
+      "artifacts": {
+        "evaluate-model-kpi": {
+          "artifactType": {
+            "schemaTitle": "system.Metrics",
+            "schemaVersion": "0.0.1"
+          }
+        }
+      }
+    }
+  },
+  "schemaVersion": "2.1.0",
+  "sdkVersion": "kfp-2.4.0"
+}
