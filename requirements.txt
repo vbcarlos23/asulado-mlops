@@ -7,3 +7,4 @@ kfp
 fsspec
 gcsfs
 pyarrow
+PyYAML
