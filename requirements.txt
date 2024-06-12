@@ -1,0 +1,9 @@
+pandas
+numpy
+scikit-learn
+google-cloud-storage
+google-cloud-aiplatform
+kfp
+fsspec
+gcsfs
+pyarrow
