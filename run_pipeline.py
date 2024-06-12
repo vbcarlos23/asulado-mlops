@@ -14,6 +14,7 @@ print(f"PIPELINE_ROOT :{PIPELINE_ROOT}")
 
 
 
+
 job = aiplatform.PipelineJob(
     display_name=DISPLAY_NAME,
     template_path=PACKAGE_PATH,
