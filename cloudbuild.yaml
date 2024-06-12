@@ -1,46 +1,27 @@
 steps:
-  - name: 'gcr.io/cloud-builders/git'
+  - name: 'gcr.io/interno-davinci-analitica/asulado-mlops:latest'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        git clone https://github.com/vbcarlos23/asulado-mlops.git
-        cd asulado-mlops
-
-  - name: 'python:3.9'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        cd asulado-mlops
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip list
-
-  - name: 'python:3.9'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        cd asulado-mlops
-        pip list
+        cd /app
         python build_pipeline.py
 
-  - name: 'python:3.9'
+  - name: 'gcr.io/interno-davinci-analitica/asulado-mlops:latest'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        cd asulado-mlops
+        cd /app
         python run_pipeline.py
 
 # Opcional: Despliegue automático del modelo si es necesario
-  - name: 'python:3.9'
+  - name: 'gcr.io/interno-davinci-analitica/asulado-mlops:latest'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        cd asulado-mlops
+        cd /app
         python deploy_model.py
 
 # Artifacts
@@ -48,7 +29,6 @@ artifacts:
   objects:
     location: 'gs://interno-davinci-analitica-bucket/resultados/'
     paths: ['**']
-
 
 # Configuración adicional
 timeout: 3600s  # Tiempo de espera máximo para la construcción
