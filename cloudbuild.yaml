@@ -15,6 +15,7 @@ steps:
         cd asulado-mlops
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip list
 
   - name: 'python:3.9'
     entrypoint: 'bash'
@@ -22,6 +23,7 @@ steps:
       - '-c'
       - |
         cd asulado-mlops
+        pip list
         python build_pipeline.py
 
   - name: 'python:3.9'
