@@ -12,6 +12,7 @@ BUCKET_URI = config.get("staging_bucket_uri")
 PIPELINE_ROOT = "{}/pipeline_root/kfp_tabular_data_regression".format(BUCKET_URI)
 print(f"PIPELINE_ROOT :{PIPELINE_ROOT}")
 
+
 job = aiplatform.PipelineJob(
     display_name=DISPLAY_NAME,
     template_path=PACKAGE_PATH,
